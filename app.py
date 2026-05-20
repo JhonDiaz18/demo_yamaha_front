@@ -28,6 +28,8 @@ load_css("styles.css")
 MENU = [
     "Solicitar crédito",
     "📊 Estudio crédito",
+    "✅ Formalización",
+    "⏸️ Pendientes",
     "Resultado / Seguimiento",
 ]
 
@@ -205,6 +207,24 @@ def init_state():
         }
 
     
+    if "final" not in st.session_state:
+        st.session_state.final = {
+            "formalizacion_ok": False,
+            "seguros_ok": False,
+            "garantias_ok": False,
+        }
+
+    if "pendientes" not in st.session_state:
+        st.session_state.pendientes = [
+            {"item": "Documento adicional: evidencia de ingresos del activo", "estado": "Pendiente"},
+            {"item": "Validación de actividad económica (llamada)", "estado": "Pendiente"},
+            {"item": "Validación del activo/proveedor", "estado": "Pendiente"},
+        ]
+
+    # Aplicar navegación pendiente de step (si existe)
+    if "pending_step" in st.session_state and st.session_state.pending_step is not None:
+        st.session_state.step = st.session_state.pending_step
+        st.session_state.pending_step = None
 
     
 
@@ -216,11 +236,35 @@ init_state()
 # ==========================================================
 with st.sidebar:
     st.markdown("### Panel de administración")
-    st.session_state.page = st.radio("Menú",
+
+    # 1) defaults
+    if "page" not in st.session_state:
+        st.session_state.page = "Solicitar crédito"
+
+    if "menu_choice" not in st.session_state:
+        st.session_state.menu_choice = st.session_state.page
+
+    if "pending_page" not in st.session_state:
+        st.session_state.pending_page = None
+
+    # 2) aplicar navegación pendiente ANTES de crear el widget
+    if st.session_state.pending_page:
+        st.session_state.page = st.session_state.pending_page
+        st.session_state.menu_choice = st.session_state.pending_page
+        st.session_state.pending_page = None
+
+    # 3) crear radio (el usuario ya puede cambiarlo)
+    choice = st.radio(
+        "Menú",
         MENU,
-        index=MENU.index(st.session_state.page) if st.session_state.page in MENU else 0,
+        index=MENU.index(st.session_state.menu_choice) if st.session_state.menu_choice in MENU else 0,
+        key="menu_choice",
         label_visibility="collapsed"
     )
+
+    # 4) sincronizar page con lo que el usuario eligió
+    st.session_state.page = choice
+
     st.divider()
     st.caption("Demo solo visual (Front). Modo claro.")
 
@@ -337,12 +381,21 @@ def render_stepper(active_idx: int):
 
 
 # Si estoy en Estudio, resaltar Paso 3 (index 2)
+
 if st.session_state.page == "📊 Estudio crédito":
-    active_idx = 2
+    active_idx = 2  # Paso 3
+elif st.session_state.page == "✅ Formalización":
+    active_idx = 3  # Paso 4 ✅
+elif st.session_state.page == "⏸️ Pendientes":
+    active_idx = 2  # sigue en Estudio (Paso 3) aunque esté congelado
+elif st.session_state.page == "Resultado / Seguimiento":
+    active_idx = 5  # Paso 6 (Resultado)
 elif st.session_state.page == "Solicitar crédito":
-    active_idx = st.session_state.step  # 0 o 1
+    # Paso 1 y 2 dependen de step: 0->Paso1, 1->Paso2
+    active_idx = st.session_state.step
 else:
     active_idx = 0
+
 
 render_stepper(active_idx)
 
@@ -394,6 +447,13 @@ def render_submit_modal():
             st.session_state.show_submit_modal = False
             st.rerun()
 
+def go(page: str, step=None):
+    """Navegación segura: NO modifica el estado del radio después de creado."""
+    st.session_state.pending_page = page
+    if step is not None:
+        st.session_state.pending_step = step
+    st.rerun()
+
 # ==========================================================
 # 6) RUTEO (en Parte 2 implementamos contenido real de Paso 1 y Paso 2)
 # ==========================================================
@@ -421,7 +481,6 @@ def render_estudio_credito():
     with c4:
         st.metric("Modalidad", data.get("modalidad", "Marina"))
 
-    # st.divider()
 
     # =========================
     # 2) Validaciones automáticas (SIN identidad)
@@ -538,9 +597,118 @@ def render_estudio_credito():
                 index=["No demuestra ingresos", "Alto endeudamiento", "Actividad no verificable", "Score insuficiente"].index(study["causal_rechazo"])
             )
             st.error(f"❌ Rechazado (DEMO): {study['causal_rechazo']}")
+        
+        if study["decision"] == "Aprobado":
+            if st.button("Ir a Formalización →", use_container_width=True):
+                go("✅ Formalización")
+
+        elif study["decision"] == "Congelado":
+            if st.button("Ver Pendientes →", use_container_width=True):
+                go("⏸️ Pendientes")
+
+        elif study["decision"] == "Rechazado":
+            if st.button("Ver Resultado →", use_container_width=True):
+                go("Resultado / Seguimiento")
+
+def render_pendientes_congelado():
+    card_open("⏸️ Pendientes de Estudio (DEMO)", "Tu solicitud quedó congelada por información pendiente. (Vista demo)")
+
+    st.warning("Estado: Congelado — se requiere completar validaciones o documentos antes de decidir. ")
+
+    st.markdown("### Pendientes")
+    # tabla editable demo (modo claro)
+    st.session_state.pendientes = st.data_editor(
+        st.session_state.pendientes,
+        use_container_width=True,
+        num_rows="dynamic",
+        column_config={
+            "estado": st.column_config.SelectboxColumn(options=["Pendiente", "En revisión", "Completado"])
+        }
+    )
+
+    st.markdown("### Acción")
+    c1, c2 = st.columns([2, 1])
+    with c1:
+        st.caption("En un flujo real, aquí se solicitarían documentos/visita/referenciación según la política. ")
+    with c2:
+        # Ir a Paso 2 (Documentación)
+        if st.button("Ir a Documentación (Paso 2) →", use_container_width=True):
+            st.session_state.page = "Solicitar crédito"
+            st.session_state.step = 1
+            st.rerun()
+    
+    card_close()
+
+def render_formalizacion():
+    card_open("✅ Paso 4 | Formalización (DEMO)", "Documentos + Seguros + Garantías (en un solo paso).")
+
+    st.info("Esta pantalla simula la formalización posterior a una decisión Aprobada. ")
+
+    f = st.session_state.final
+
+    st.markdown("### Documentos")
+    f["formalizacion_ok"] = st.checkbox("Carta de aprobación / Pagaré / Contrato (DEMO)", value=f["formalizacion_ok"])
+
+    st.markdown("### Seguros (crítico en marino)")
+    f["seguros_ok"] = st.checkbox("Seguro de vida + Seguro del bien (todo riesgo obligatorio) (DEMO)", value=f["seguros_ok"])  # 
+
+    st.markdown("### Garantías (DEMO)")
+    f["garantias_ok"] = st.checkbox("Garantía/prenda sobre el activo (motor/bote/moto acuática) o alternativa (DEMO)", value=f["garantias_ok"])  # 
+
+    st.divider()
+
+    listo = f["formalizacion_ok"] and f["seguros_ok"] and f["garantias_ok"]
+
+    c1, c2 = st.columns([3, 1])
+    with c1:
+        if listo:
+            st.success("✅ Formalización completa (DEMO). Ya puedes ver el resultado final.")
+        else:
+            st.warning("⚠️ Marca los 3 checks para finalizar la formalización (DEMO).")
+
+    with c2:
+        if st.button("Finalizar →", disabled=not listo, use_container_width=True):
+            # manda a Resultado final
+            st.session_state.page = "Resultado / Seguimiento"
+            st.rerun()
 
     card_close()
 
+def render_resultado():
+    card_open("📩 Resultado / Seguimiento (DEMO)", "Resumen final según la decisión del estudio.")
+
+    study = st.session_state.study
+    decision = study.get("decision")
+
+    if not decision:
+        st.info("Aún no hay decisión. Ve a 📊 Estudio de crédito y selecciona Aprobar / Congelar / Rechazar.")
+        card_close()
+        return
+
+    if decision == "Aprobado":
+        st.success("✅ Crédito Aprobado (DEMO). Continuó a formalización con seguros y garantías. ")
+        st.markdown("- Estado: **Aprobado**")
+        st.markdown("- Siguiente: **Formalización completada** (DEMO)")
+    elif decision == "Congelado":
+        st.warning("⏸️ Solicitud Congelada (DEMO). Debe completarse documentación/validaciones. ")
+        st.markdown(f"- Motivo: **{study.get('motivo_congelado', 'Falta documentación')}**")
+    else:
+        st.error("❌ Crédito Rechazado (DEMO). ")
+        st.markdown(f"- Causal: **{study.get('causal_rechazo', 'Score insuficiente')}**")
+
+    st.divider()
+    c1, c2 = st.columns([1, 1])
+    with c1:
+        if st.button("Volver a Estudio", use_container_width=True):
+            st.session_state.page = "📊 Estudio crédito"
+            st.rerun()
+    with c2:
+        if st.button("Volver a Solicitud", use_container_width=True):
+            st.session_state.page = "Solicitar crédito"
+            st.session_state.step = 0
+            st.rerun()
+
+    card_close()
 # ==========================================================
 # 7) PASO 1: Acordeones KYC + 2 checks + botón Continuar (derecha)
 # ==========================================================
@@ -918,6 +1086,13 @@ if st.session_state.page == "Solicitar crédito":
 
 elif st.session_state.page == "📊 Estudio crédito":
     render_estudio_credito()
+
+elif st.session_state.page == "✅ Formalización":
+    render_formalizacion()
+
+elif st.session_state.page == "⏸️ Pendientes":
+    render_pendientes_congelado()
+
 
 else:
     render_placeholder("Resultado / Seguimiento", "Parte final demo pendiente.")
