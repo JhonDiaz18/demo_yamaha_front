@@ -1,3 +1,5 @@
+from importlib.resources import files
+
 import streamlit as st
 from pathlib import Path
 
@@ -24,11 +26,9 @@ load_css("styles.css")
 # 1) CONSTANTES (Stepper + Lists)
 # ==========================================================
 MENU = [
-    "Lista de Créditos",
-    "Gestión de Créditos",
     "Solicitar crédito",
-    "Retomar crédito",
-    "Simular crédito",
+    "📊 Estudio crédito",
+    "Resultado / Seguimiento",
 ]
 
 # Stepper horizontal (con lanchas). Paso 1 y Paso 2 reales, resto demo.
@@ -168,6 +168,18 @@ def init_state():
             {"Tipo de ID": "CC", "Número": "1000000002", "Nombre y Apellidos": "Accionista 2", "% Participación": 40, "¿PEP?": "NO"},
         ]
 
+    if "page" not in st.session_state:
+        st.session_state.page = "Solicitar crédito"
+
+    if "show_submit_modal" not in st.session_state:
+        st.session_state.show_submit_modal = False
+
+    if "docs_uploaded" not in st.session_state:
+        st.session_state.docs_uploaded = False
+
+    
+
+
 
 init_state()
 
@@ -177,7 +189,12 @@ init_state()
 # ==========================================================
 with st.sidebar:
     st.markdown("### Panel de administración")
-    st.radio("Menú", MENU, index=2, label_visibility="collapsed")
+    st.session_state.page = st.radio(
+        "Menú",
+        MENU,
+        index=MENU.index(st.session_state.page) if st.session_state.page in MENU else 0,
+        label_visibility="collapsed"
+    )
     st.divider()
     st.caption("Demo solo visual (Front). Modo claro.")
 
@@ -311,6 +328,37 @@ def card_close():
 def kyc():
     return st.session_state.kyc
 
+def render_submit_modal():
+    """Modal que aparece al finalizar Paso 2."""
+    if not st.session_state.show_submit_modal:
+        return
+
+    st.markdown(
+        """
+        <div class="modal-overlay">
+          <div class="modal">
+            <div class="modal-title">✅ Solicitud radicada</div>
+            <div class="modal-text">
+              Tu solicitud pasará a <b>Estudio de crédito</b>. <br/>
+              En la demo podrás ver cómo se evaluaría el caso con ejemplos ficticios.
+            </div>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # Acciones con botones (debajo del HTML, para que Streamlit capture eventos)
+    a1, a2 = st.columns([3, 1])
+    with a1:
+        if st.button("Ir a Estudio de crédito", key="modal_go_study", use_container_width=True):
+            st.session_state.show_submit_modal = False
+            st.session_state.page = "📊 Estudio crédito"
+            st.rerun()
+    with a2:
+        if st.button("Cerrar", key="modal_close", use_container_width=True):
+            st.session_state.show_submit_modal = False
+            st.rerun()
 
 # ==========================================================
 # 6) RUTEO (en Parte 2 implementamos contenido real de Paso 1 y Paso 2)
@@ -657,22 +705,30 @@ def paso_2():
         st.checkbox(a, value=False)
 
     st.markdown("### Cargar archivos (DEMO)")
-    st.file_uploader(
+
+    files = st.file_uploader(
         "Subir documentos",
         accept_multiple_files=True,
         type=["pdf", "png", "jpg", "jpeg", "doc", "docx", "xls", "xlsx"]
     )
+    st.session_state.last_upload_count = len(files) if files else 0
 
-    # Navegación de apoyo
+    # ✅ DEFINE nav_l y nav_r ANTES de usarlos
     nav_l, nav_r = st.columns([1, 1])
+
     with nav_l:
         if st.button("← Volver a Paso 1", use_container_width=True):
             st.session_state.step = 0
             st.rerun()
-    with nav_r:
-        st.button("Continuar (Demo) →", disabled=True, use_container_width=True)
 
-    card_close()
+    with nav_r:
+        uploaded = st.session_state.get("last_upload_count", 0) > 0
+        if st.button("Enviar a estudio →", disabled=not uploaded, use_container_width=True):
+            st.session_state.show_submit_modal = True
+            st.rerun()
+
+
+    # card_close()
 
 
 # ==========================================================
@@ -687,3 +743,5 @@ else:
         f"{STEP_MODELS[st.session_state.step]['title']} | {STEP_MODELS[st.session_state.step]['desc']}",
         "Sección demo pendiente. Por ahora están implementados Paso 1 y Paso 2."
     )
+
+render_submit_modal()
