@@ -35,9 +35,9 @@ MENU = [
 STEP_MODELS = [
     {"key": "p1", "title": "Paso 1", "desc": "Conocimiento del cliente", "icon": "boatSvg"},
     {"key": "p2", "title": "Paso 2", "desc": "Documentación", "icon": "boatSvg2"},
-    {"key": "p3", "title": "Paso 3", "desc": "Validaciones (demo)", "icon": "boatSvg"},
-    {"key": "p4", "title": "Paso 4", "desc": "Análisis (demo)", "icon": "boatSvg2"},
-    {"key": "p5", "title": "Paso 5", "desc": "Producto (demo)", "icon": "boatSvg"},
+    {"key": "p3", "title": "Paso 3", "desc": "Estudio", "icon": "boatSvg"},
+    {"key": "p4", "title": "Paso 4", "desc": "Formalización", "icon": "boatSvg2"},
+    {"key": "p5", "title": "Paso 5", "desc": "Resultado", "icon": "boatSvg"},
     {"key": "p6", "title": "Paso 6", "desc": "Respuesta (demo)", "icon": "boatSvg2"},
 ]
 
@@ -177,9 +177,36 @@ def init_state():
     if "docs_uploaded" not in st.session_state:
         st.session_state.docs_uploaded = False
 
+    if "page" not in st.session_state:
+        st.session_state.page = "Solicitar crédito"
+
+    # =========================
+    # Estado del estudio de crédito (DEMO)
+    # =========================
+    if "study" not in st.session_state:
+        st.session_state.study = {
+            "estado": "En estudio",                  # En estudio / Decidido
+            "radicado": "SOL-2026-000123",           # ficticio
+            "buro": "OK",                            # OK / Alerta
+            "listas": "OK",                          # OK / Coincidencia
+            # OJO: NO usamos Validación identidad (por tu proceso)
+            "score_buro": 712,                       # ficticio
+            "icp": 1.8,                              # ficticio (Balance/Cuota)
+            "endeudamiento": "Medio",                # Bajo/Medio/Alto
+            "uso_activo": "Comercial",               # Comercial/Recreativo
+            "zona": "Costa",                         # Costa/Río/Lago
+            "estacionalidad": "Media",               # Alta/Media/Baja
+            "formalidad": "Media",                   # Alta/Media/Baja
+            "verificacion_activo": "Verificado",     # Verificado/Pendiente
+            "decision": None,                        # Aprobado/Congelado/Rechazado
+            "causal_rechazo": "Score insuficiente",  # demo
+            "motivo_congelado": "Falta documentación",# demo
+    
+        }
+
     
 
-
+    
 
 init_state()
 
@@ -189,8 +216,7 @@ init_state()
 # ==========================================================
 with st.sidebar:
     st.markdown("### Panel de administración")
-    st.session_state.page = st.radio(
-        "Menú",
+    st.session_state.page = st.radio("Menú",
         MENU,
         index=MENU.index(st.session_state.page) if st.session_state.page in MENU else 0,
         label_visibility="collapsed"
@@ -310,7 +336,15 @@ def render_stepper(active_idx: int):
     st.markdown("</div>", unsafe_allow_html=True)
 
 
-render_stepper(st.session_state.step)
+# Si estoy en Estudio, resaltar Paso 3 (index 2)
+if st.session_state.page == "📊 Estudio crédito":
+    active_idx = 2
+elif st.session_state.page == "Solicitar crédito":
+    active_idx = st.session_state.step  # 0 o 1
+else:
+    active_idx = 0
+
+render_stepper(active_idx)
 
 
 # ==========================================================
@@ -368,11 +402,144 @@ def render_placeholder(title: str, msg: str):
     st.info(msg)
     card_close()
 
-# --- FIN PARTE 1/2 ---
-# En la PARTE 2/2 vamos a:
-# - Construir Paso 1 con acordeones (sin fecha, producto Wholesale, modalidad Marina)
-# - Al final: checks T&C (2 checks) y botón "Continuar" a la derecha para ir al Paso 2
-# - Paso 2: subir documentación (uploader + checklist)
+def render_estudio_credito():
+    card_open("📊 Estudio de crédito", "Simulación demo con tarjetas + decisión manual del analista (sin backend).")
+
+    study = st.session_state.study
+    data = st.session_state.kyc  # usamos datos reales del Paso 1 (razón social, nit, etc.)
+
+    # =========================
+    # 1) Encabezado de caso
+    # =========================
+    c1, c2, c3, c4 = st.columns([1.2, 1.2, 1.2, 1.2])
+    with c1:
+        st.metric("Radicado", study["radicado"])
+    with c2:
+        st.metric("Estado", study["estado"])
+    with c3:
+        st.metric("Producto", data.get("producto", "Wholesale"))
+    with c4:
+        st.metric("Modalidad", data.get("modalidad", "Marina"))
+
+    # st.divider()
+
+    # =========================
+    # 2) Validaciones automáticas (SIN identidad)
+    #    Doc base: Buró + Listas como automáticas. 【1-785c2e】
+    # =========================
+    st.markdown("### Validaciones automáticas (DEMO)")
+    v1, v2 = st.columns(2)
+    with v1:
+        st.markdown("**Buró de crédito (Experian)**")  # demo
+        st.selectbox("Resultado", ["OK", "Alerta"], index=["OK", "Alerta"].index(study["buro"]), key="study_buro")
+        study["buro"] = st.session_state.study_buro
+    with v2:
+        st.markdown("**Listas restrictivas (SARLAFT)**")  # demo
+        st.selectbox("Resultado", ["OK", "Coincidencia"], index=["OK", "Coincidencia"].index(study["listas"]), key="study_listas")
+        study["listas"] = st.session_state.study_listas
+
+    # st.divider()
+
+    # =========================
+    # 3) Scoring + capacidad de pago (tarjetas)
+    #    Doc: score buró + score capacidad pago + evaluación financiera (ICP). 【1-785c2e】
+    # =========================
+    st.markdown("### Scoring y capacidad de pago (DEMO)")
+    s1, s2, s3 = st.columns(3)
+    with s1:
+        st.metric("Score buró", f"{study['score_buro']}")
+    with s2:
+        st.metric("ICP (Balance/Cuota)", f"{study['icp']}")
+    with s3:
+        st.metric("Endeudamiento", study["endeudamiento"])
+
+    # st.divider()
+
+    # =========================
+    # 4) Evaluación especializada Marino (diferenciadores)
+    #    Doc: uso activo, zona, estacionalidad, formalidad, verificación activo. 【1-785c2e】
+    # =========================
+    st.markdown("### Evaluación especializada (Marina) — DEMO")
+
+    e1, e2, e3 = st.columns(3)
+    with e1:
+        study["uso_activo"] = st.selectbox("Uso del activo", ["Comercial", "Recreativo"],
+                                           index=["Comercial", "Recreativo"].index(study["uso_activo"]))
+    with e2:
+        study["zona"] = st.selectbox("Zona de operación", ["Costa", "Río", "Lago"],
+                                     index=["Costa", "Río", "Lago"].index(study["zona"]))
+    with e3:
+        study["estacionalidad"] = st.selectbox("Estacionalidad", ["Alta", "Media", "Baja"],
+                                               index=["Alta", "Media", "Baja"].index(study["estacionalidad"]))
+
+    e4, e5 = st.columns(2)
+    with e4:
+        study["formalidad"] = st.selectbox("Formalidad del negocio", ["Alta", "Media", "Baja"],
+                                           index=["Alta", "Media", "Baja"].index(study["formalidad"]))
+    with e5:
+        study["verificacion_activo"] = st.selectbox("Verificación del activo/proveedor", ["Verificado", "Pendiente"],
+                                                    index=["Verificado", "Pendiente"].index(study["verificacion_activo"]))
+
+    # Zona de análisis (toggle demo)
+    st.markdown("#### Zona de análisis (DEMO)")
+    zona_analisis = st.toggle("Activar Zona de análisis (cuando no pasa automático)", value=False)
+
+    if zona_analisis:
+        st.info("Zona de análisis activa: se solicitarían documentos adicionales / visita / referenciación (DEMO).")
+        za1, za2, za3 = st.columns(3)
+        with za1:
+            st.checkbox("Solicitar documentos adicionales", value=True)
+        with za2:
+            st.checkbox("Programar visita en sitio", value=True)
+        with za3:
+            st.checkbox("Referenciación telefónica", value=True)
+
+    # st.divider()
+
+    # =========================
+    # 5) Decisión interactiva (tu elección 🅑)
+    #    Doc: Aprobado / Congelado / Rechazado y causales. 【1-785c2e】
+    # =========================
+    st.markdown("### Decisión del analista (DEMO)")
+
+    d1, d2, d3 = st.columns(3)
+    with d1:
+        if st.button("✅ Aprobar", use_container_width=True):
+            study["decision"] = "Aprobado"
+            study["estado"] = "Decidido"
+            st.toast("Decisión registrada: Aprobado", icon="✅")
+    with d2:
+        if st.button("⏸️ Congelar", use_container_width=True):
+            study["decision"] = "Congelado"
+            study["estado"] = "Decidido"
+            st.toast("Decisión registrada: Congelado", icon="⏸️")
+    with d3:
+        if st.button("❌ Rechazar", use_container_width=True):
+            study["decision"] = "Rechazado"
+            study["estado"] = "Decidido"
+            st.toast("Decisión registrada: Rechazado", icon="❌")
+
+    # Resultado visible
+    if study["decision"]:
+        st.markdown("#### Resultado del estudio")
+        if study["decision"] == "Aprobado":
+            st.success("✅ Aprobado (DEMO): pasaría a Formalización (seguros + garantías).")
+        elif study["decision"] == "Congelado":
+            study["motivo_congelado"] = st.selectbox(
+                "Motivo de congelación (DEMO)",
+                ["Falta documentación", "Validación de actividad", "Validación del activo"],
+                index=["Falta documentación", "Validación de actividad", "Validación del activo"].index(study["motivo_congelado"])
+            )
+            st.warning(f"⏸️ Congelado (DEMO): {study['motivo_congelado']}")
+        else:
+            study["causal_rechazo"] = st.selectbox(
+                "Causal de rechazo (DEMO)",
+                ["No demuestra ingresos", "Alto endeudamiento", "Actividad no verificable", "Score insuficiente"],
+                index=["No demuestra ingresos", "Alto endeudamiento", "Actividad no verificable", "Score insuficiente"].index(study["causal_rechazo"])
+            )
+            st.error(f"❌ Rechazado (DEMO): {study['causal_rechazo']}")
+
+    card_close()
 
 # ==========================================================
 # 7) PASO 1: Acordeones KYC + 2 checks + botón Continuar (derecha)
@@ -734,14 +901,26 @@ def paso_2():
 # ==========================================================
 # 9) RENDER según paso actual
 # ==========================================================
-if st.session_state.step == 0:
-    paso_1()
-elif st.session_state.step == 1:
-    paso_2()
-else:
-    render_placeholder(
-        f"{STEP_MODELS[st.session_state.step]['title']} | {STEP_MODELS[st.session_state.step]['desc']}",
-        "Sección demo pendiente. Por ahora están implementados Paso 1 y Paso 2."
-    )
+# =========================
+# ROUTER PRINCIPAL (por página)
+# =========================
+if st.session_state.page == "Solicitar crédito":
+    # Dentro de Solicitar, usamos el step (Paso 1 / Paso 2)
+    if st.session_state.step == 0:
+        paso_1()
+    elif st.session_state.step == 1:
+        paso_2()
+    else:
+        render_placeholder(
+            f"{STEP_MODELS[st.session_state.step]['title']} | {STEP_MODELS[st.session_state.step]['desc']}",
+            "Sección demo pendiente. Por ahora están implementados Paso 1 y Paso 2."
+        )
 
+elif st.session_state.page == "📊 Estudio crédito":
+    render_estudio_credito()
+
+else:
+    render_placeholder("Resultado / Seguimiento", "Parte final demo pendiente.")
+
+# El modal siempre al final para que quede por encima
 render_submit_modal()

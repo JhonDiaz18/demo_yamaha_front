@@ -650,3 +650,27 @@ section[data-testid="stMain"] div[data-testid="stFileUploader"] label {
   gap: 10px;
   justify-content:flex-end;
 }
+
+/* =========================
+   Reducir tamaño de st.metric (valores muy grandes)
+   ========================= */
+section[data-testid="stMain"] [data-testid="stMetric"] {
+  padding: 6px 0 !important;
+}
+
+section[data-testid="stMain"] [data-testid="stMetricLabel"] {
+  font-size: 12px !important;
+  color: var(--muted) !important;
+  font-weight: 700 !important;
+}
+
+section[data-testid="stMain"] [data-testid="stMetricValue"] {
+  font-size: 22px !important;  /* antes se ve ~40px */
+  color: var(--text) !important;
+  font-weight: 900 !important;
+  line-height: 1.1 !important;
+}
+
+section[data-testid="stMain"] [data-testid="stMetricDelta"] {
+  font-size: 12px !important;
+}
