@@ -27,9 +27,9 @@ load_css("styles.css")
 # ==========================================================
 MENU = [
     "Solicitar crédito",
-    "📊 Estudio crédito",
-    "✅ Formalización",
-    "⏸️ Pendientes",
+    "Estudio crédito",
+    "Formalización",
+    "Pendientes",
     "Resultado / Seguimiento",
 ]
 
@@ -382,11 +382,11 @@ def render_stepper(active_idx: int):
 
 # Si estoy en Estudio, resaltar Paso 3 (index 2)
 
-if st.session_state.page == "📊 Estudio crédito":
+if st.session_state.page == "Estudio crédito":
     active_idx = 2  # Paso 3
-elif st.session_state.page == "✅ Formalización":
+elif st.session_state.page == "Formalización":
     active_idx = 3  # Paso 4 ✅
-elif st.session_state.page == "⏸️ Pendientes":
+elif st.session_state.page == "Pendientes":
     active_idx = 2  # sigue en Estudio (Paso 3) aunque esté congelado
 elif st.session_state.page == "Resultado / Seguimiento":
     active_idx = 5  # Paso 6 (Resultado)
@@ -440,7 +440,7 @@ def render_submit_modal():
     with a1:
         if st.button("Ir a Estudio de crédito", key="modal_go_study", use_container_width=True):
             st.session_state.show_submit_modal = False
-            st.session_state.page = "📊 Estudio crédito"
+            st.session_state.page = "Estudio crédito"
             st.rerun()
     with a2:
         if st.button("Cerrar", key="modal_close", use_container_width=True):
@@ -600,18 +600,18 @@ def render_estudio_credito():
         
         if study["decision"] == "Aprobado":
             if st.button("Ir a Formalización →", use_container_width=True):
-                go("✅ Formalización")
+                go("Formalización")
 
         elif study["decision"] == "Congelado":
             if st.button("Ver Pendientes →", use_container_width=True):
-                go("⏸️ Pendientes")
+                go("Pendientes")
 
         elif study["decision"] == "Rechazado":
             if st.button("Ver Resultado →", use_container_width=True):
                 go("Resultado / Seguimiento")
 
 def render_pendientes_congelado():
-    card_open("⏸️ Pendientes de Estudio (DEMO)", "Tu solicitud quedó congelada por información pendiente. (Vista demo)")
+    card_open("Pendientes de Estudio (DEMO)", "Tu solicitud quedó congelada por información pendiente. (Vista demo)")
 
     st.warning("Estado: Congelado — se requiere completar validaciones o documentos antes de decidir. ")
 
@@ -662,7 +662,7 @@ def render_formalizacion():
     c1, c2 = st.columns([3, 1])
     with c1:
         if listo:
-            st.success("✅ Formalización completa (DEMO). Ya puedes ver el resultado final.")
+            st.success("Formalización completa (DEMO). Ya puedes ver el resultado final.")
         else:
             st.warning("⚠️ Marca los 3 checks para finalizar la formalización (DEMO).")
 
@@ -700,7 +700,7 @@ def render_resultado():
     c1, c2 = st.columns([1, 1])
     with c1:
         if st.button("Volver a Estudio", use_container_width=True):
-            st.session_state.page = "📊 Estudio crédito"
+            st.session_state.page = "Estudio crédito"
             st.rerun()
     with c2:
         if st.button("Volver a Solicitud", use_container_width=True):
@@ -1084,13 +1084,13 @@ if st.session_state.page == "Solicitar crédito":
             "Sección demo pendiente. Por ahora están implementados Paso 1 y Paso 2."
         )
 
-elif st.session_state.page == "📊 Estudio crédito":
+elif st.session_state.page == "Estudio crédito":
     render_estudio_credito()
 
-elif st.session_state.page == "✅ Formalización":
+elif st.session_state.page == "Formalización":
     render_formalizacion()
 
-elif st.session_state.page == "⏸️ Pendientes":
+elif st.session_state.page == "Pendientes":
     render_pendientes_congelado()
 
 
