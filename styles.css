@@ -1,0 +1,604 @@
+/* ==========================================================
+   Yamaha Demo UI (Light mode)
+   - Texto visible en todas partes
+   - Acordeones gris oscuro (no negro) con texto blanco
+   - Botones morados
+   - Stepper horizontal con iconos de lancha (SVG embebido)
+   ========================================================== */
+
+/* ---------------------------
+   Variables (ajusta aquí)
+---------------------------- */
+:root{
+  /* Marca / UI */
+  --yam-purple: #6F3FA5;
+  --yam-purple-2: #7C4DB8;
+  --yam-red: #E6003D;
+  --yam-magenta: #9C2C7A;
+
+  /* Modo claro */
+  --bg: #F4F6F8;
+  --card: #FFFFFF;
+  --border: #D7DCE2;
+
+  /* Tipografía */
+  --text: #111827;
+  --muted: #4B5563;      /* gris oscuro suave */
+  --muted-2: #6B7280;    /* gris medio */
+  --placeholder: #9CA3AF;
+
+  /* Inputs */
+  --input-bg: #FFFFFF;
+  --input-border: #CBD5E1;
+  --input-border-focus: #6F3FA5;
+  --input-text: #111827;
+
+  /* Acordeones */
+  --acc-bg: #374151;        /* gris oscuro (NO negro) */
+  --acc-bg-hover: #425064;
+  --acc-border: #4B5563;
+  --acc-text: #FFFFFF;
+
+  /* Stepper */
+  --step-bg: #FFFFFF;
+  --step-border: #D7DCE2;
+  --step-active-bg: #F3EEFB;
+  --step-done-bg: #ECFDF5;
+  --step-done-border: #10B981;
+
+  /* Gradiente encabezado */
+  --hero-gradient: linear-gradient(90deg, var(--yam-red) 0%, var(--yam-magenta) 45%, #5A2D82 100%);
+}
+
+/* ---------------------------
+   Base / Fondo
+---------------------------- */
+html, body, [class*="css"]{
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans";
+  color: var(--text) !important;
+}
+
+.stApp{
+  background: var(--bg) !important;
+}
+
+/* Evitar "lavado" u opacidad heredada */
+*{
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* ---------------------------
+   Sidebar (morado)
+---------------------------- */
+section[data-testid="stSidebar"]{
+  background: var(--yam-purple) !important;
+  border-right: 1px solid rgba(255,255,255,.12) !important;
+}
+section[data-testid="stSidebar"] *{
+  color: #FFFFFF !important;
+}
+section[data-testid="stSidebar"] a,
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] span{
+  color: #FFFFFF !important;
+}
+
+/* ---------------------------
+   Hero (encabezado)
+---------------------------- */
+.hero{
+  background: var(--hero-gradient);
+  border-radius: 14px;
+  padding: 18px 22px;
+  color: #FFFFFF;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow: 0 8px 20px rgba(17,24,39,.10);
+  margin: 6px 0 16px 0;
+}
+.hero .title{
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: .5px;
+  margin: 0;
+  line-height: 1.1;
+}
+.hero .subtitle{
+  font-size: 14px;
+  margin-top: 6px;
+  opacity: .95;
+}
+.hero .badge{
+  background: rgba(255,255,255,.14);
+  border: 1px solid rgba(255,255,255,.22);
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 800;
+}
+
+/* ---------------------------
+   Cards genéricas
+---------------------------- */
+.card{
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  padding: 16px !important;
+  box-shadow: 0 6px 16px rgba(17,24,39,.06);
+  margin-bottom: 14px;
+}
+
+.form-h{
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--yam-purple);
+  margin: 0 0 4px 0;
+}
+.form-p{
+  margin: 0 0 12px 0;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* ---------------------------
+   Inputs: visibles (no oscuros)
+---------------------------- */
+/* Text input container */
+div[data-baseweb="input"] > div{
+  background: transparent !important;
+}
+
+/* Input */
+div[data-baseweb="input"] input{
+  background-color: var(--input-bg) !important;
+  color: var(--input-text) !important;
+  border: 1px solid var(--input-border) !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+  box-shadow: none !important;
+}
+
+/* Select */
+div[data-baseweb="select"] > div{
+  background-color: var(--input-bg) !important;
+  color: var(--input-text) !important;
+  border: 1px solid var(--input-border) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+/* Textarea */
+div[data-baseweb="textarea"] textarea,
+textarea{
+  background-color: var(--input-bg) !important;
+  color: var(--input-text) !important;
+  border: 1px solid var(--input-border) !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+  box-shadow: none !important;
+}
+
+/* Placeholder */
+input::placeholder, textarea::placeholder{
+  color: var(--placeholder) !important;
+}
+
+/* Focus */
+div[data-baseweb="input"] input:focus,
+div[data-baseweb="textarea"] textarea:focus,
+textarea:focus{
+  border: 1px solid var(--input-border-focus) !important;
+  box-shadow: 0 0 0 2px rgba(111,63,165,.18) !important;
+}
+
+/* Labels */
+label{
+  color: var(--text) !important;
+  font-weight: 700 !important;
+}
+
+/* ---------------------------
+   Botones: morado (modo claro)
+---------------------------- */
+.stButton > button{
+  background: var(--yam-purple) !important;
+  color: #FFFFFF !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  padding: 10px 16px !important;
+  font-weight: 900 !important;
+  letter-spacing: .2px;
+  box-shadow: 0 8px 18px rgba(111,63,165,.18);
+}
+.stButton > button:hover{
+  background: var(--yam-purple-2) !important;
+}
+.stButton > button:disabled{
+  background: #C7B7DE !important;
+  color: #FFFFFF !important;
+  box-shadow: none !important;
+}
+
+/* Botón alineado derecha (para "Continuar") */
+.btn-right{
+  display:flex;
+  justify-content:flex-end;
+  margin-top: 10px;
+}
+
+/* ---------------------------
+   Acordeones (Expander)
+   - Header gris oscuro suave con texto blanco
+   - Contenido blanco con texto oscuro
+---------------------------- */
+div[data-testid="stExpander"] details > summary{
+  background: var(--acc-bg) !important;
+  color: var(--acc-text) !important;
+  border: 1px solid var(--acc-border) !important;
+  border-radius: 14px !important;
+  padding: 12px 14px !important;
+  font-weight: 900 !important;
+}
+
+/* Hover header */
+div[data-testid="stExpander"] details > summary:hover{
+  background: var(--acc-bg-hover) !important;
+}
+
+/* Flecha */
+div[data-testid="stExpander"] details > summary svg{
+  fill: var(--acc-text) !important;
+  color: var(--acc-text) !important;
+}
+
+/* Texto del summary */
+div[data-testid="stExpander"] details > summary p,
+div[data-testid="stExpander"] details > summary span{
+  color: var(--acc-text) !important;
+  font-weight: 900 !important;
+}
+
+/* Header cuando abre: mantiene y "corta" radios abajo */
+div[data-testid="stExpander"] details[open] > summary{
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+/* Contenido */
+div[data-testid="stExpander"] details > div{
+  background: #FFFFFF !important;
+  border: 1px solid var(--border) !important;
+  border-top: none !important;
+  border-bottom-left-radius: 14px !important;
+  border-bottom-right-radius: 14px !important;
+  padding: 14px !important;
+}
+
+/* Asegurar texto visible dentro del expander */
+div[data-testid="stExpander"] details > div,
+div[data-testid="stExpander"] details > div *{
+  color: var(--text) !important;
+}
+
+/* ---------------------------
+   Checkbox: visible (modo claro)
+---------------------------- */
+div[data-testid="stCheckbox"] label{
+  color: var(--text) !important;
+  font-weight: 800 !important;
+}
+div[data-testid="stCheckbox"] svg{
+  color: var(--yam-purple) !important;
+}
+
+/* ==========================================================
+   STEPPER HORIZONTAL con "dibujos de lancha"
+   - Interactivo: hover + active + done
+   - Iconos SVG embebidos (no necesitas assets)
+   ========================================================== */
+
+/* Contenedor */
+.stepper-wrap{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 6px 16px rgba(17,24,39,.06);
+  margin-bottom: 14px;
+}
+
+/* Layout horizontal */
+.stepper{
+  display:flex;
+  gap: 12px;
+  align-items:stretch;
+  justify-content:space-between;
+  flex-wrap: nowrap;
+  overflow-x: auto; /* por si la pantalla es pequeña */
+  padding-bottom: 4px;
+}
+
+/* Card por paso */
+.stepCard{
+  flex: 1 0 160px;
+  background: var(--step-bg);
+  border: 1px solid var(--step-border);
+  border-radius: 14px;
+  padding: 12px 12px;
+  display:flex;
+  gap: 10px;
+  align-items:center;
+  cursor: pointer;
+  user-select:none;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+  min-height: 74px;
+}
+.stepCard:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(17,24,39,.08);
+  border-color: #BFC6CF;
+}
+
+/* Estado activo */
+.stepCard.active{
+  background: var(--step-active-bg);
+  border-color: rgba(111,63,165,.55);
+  box-shadow: 0 12px 26px rgba(111,63,165,.14);
+}
+
+/* Estado done */
+.stepCard.done{
+  background: var(--step-done-bg);
+  border-color: var(--step-done-border);
+}
+
+/* Icono (lancha) */
+.stepIcon{
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(111,63,165,.10);
+  border: 1px solid rgba(111,63,165,.18);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex: 0 0 40px;
+}
+
+/* Título / descripción */
+.stepTxt{
+  display:flex;
+  flex-direction:column;
+  gap: 2px;
+  line-height: 1.1;
+}
+.stepTitle{
+  font-weight: 900;
+  color: var(--text);
+  font-size: 13px;
+}
+.stepDesc{
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Icono SVG embebido: lancha (simple) */
+.boatSvg{
+  width: 22px;
+  height: 22px;
+  background-repeat:no-repeat;
+  background-size: contain;
+  background-position:center;
+  display:inline-block;
+  /* SVG data URI (fill morado) */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%236F3FA5' d='M10 40l18-18 8 8 8-10 10 10-6 10H10z'/%3E%3Cpath fill='%236F3FA5' d='M8 44h48c-2 8-10 14-24 14S10 52 8 44z' opacity='.9'/%3E%3Cpath fill='%239C2C7A' d='M30 12l10 12H30V12z'/%3E%3C/svg%3E");
+}
+
+/* Variante lancha 2 (para alternar iconos) */
+.boatSvg2{
+  width: 22px;
+  height: 22px;
+  background-repeat:no-repeat;
+  background-size: contain;
+  background-position:center;
+  display:inline-block;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Cpath%20fill%3D%27%236F3FA5%27%20d%3D%27M14%2038l16-14%2010%208%208-8%208%2010-5%2010H14z%27/%3E%3Cpath%20fill%3D%27%236F3FA5%27%20d%3D%27M10%2044h44c-3%207-10%2012-22%2012S13%2051%2010%2044z%27%20opacity%3D%27.9%27/%3E%3Ccircle%20cx%3D%2746%27%20cy%3D%2718%27%20r%3D%274%27%20fill%3D%27%239C2C7A%27/%3E%3C/svg%3E");
+}
+
+
+/* ==========================================================
+   Tablas / Data Editor (no oscuro)
+   - Mantener fondo claro y texto visible
+   ========================================================== */
+div[data-testid="stDataFrame"]{
+  background: #FFFFFF !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  padding: 8px !important;
+}
+
+/* Algunas versiones renderizan grid con role=grid */
+div[role="grid"]{
+  color: var(--text) !important;
+}
+div[role="grid"] *{
+  color: var(--text) !important;
+}
+
+/* Scrollbars suaves */
+::-webkit-scrollbar{
+  height: 10px;
+  width: 10px;
+}
+::-webkit-scrollbar-thumb{
+  background: #C9CED6;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-track{
+  background: transparent;
+}
+
+/* =========================
+   FIX ALERTAS (warning/st.warning)
+   ========================= */
+
+/* Contenedor warning */
+div[data-testid="stAlert"]{
+  background-color: #FEF3C7 !important; /* amarillo suave */
+  border: 1px solid #FCD34D !important;
+}
+
+/* Texto dentro del warning */
+div[data-testid="stAlert"] *{
+  color: #111827 !important; /* texto oscuro SIEMPRE */
+  font-weight: 700 !important;
+}
+
+/* =========================
+   FIX TEXTO (versión fina)
+   ========================= */
+
+/* Texto base normal (NO negrilla) */
+section[data-testid="stMain"] p,
+section[data-testid="stMain"] span,
+section[data-testid="stMain"] label{
+  color: var(--text) !important;
+  font-weight: 400 !important;  /* normal */
+}
+
+/* Títulos sí en negrilla */
+section[data-testid="stMain"] h1,
+section[data-testid="stMain"] h2,
+section[data-testid="stMain"] h3{
+  color: var(--text) !important;
+  font-weight: 800 !important;
+}
+
+/* Labels de inputs ligeramente resaltados */
+section[data-testid="stMain"] label{
+  font-weight: 600 !important;
+}
+
+/* CHECKBOX (legible pero no exagerado) */
+section[data-testid="stMain"] div[data-testid="stCheckbox"] label{
+  color: var(--text) !important;
+  font-weight: 500 !important;
+}
+
+/* FILE UPLOADER */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] label{
+  color: var(--text) !important;
+  font-weight: 600 !important;
+}
+
+/* Markdown títulos tipo ### */
+section[data-testid="stMain"] .stMarkdown h3{
+  font-weight: 700 !important;
+}
+
+/* Texto dentro de cards */
+.card p{
+  font-weight: 400 !important;
+  color: var(--text) !important;
+}
+
+/* ==========================================================
+   FIX: Botones morados con texto blanco
+   ========================================================== */
+
+/* Asegura que TODO texto dentro del botón sea blanco */
+.stButton > button,
+.stButton > button *{
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+}
+
+/* ==========================================================
+   FIX: File Uploader - textos auxiliares en blanco
+   (ej: "200MB per file • PDF, PNG...")
+   ========================================================== */
+
+/* 1) Label/título del uploader (si lo quieres blanco también) */
+div[data-testid="stFileUploader"] label,
+div[data-testid="stFileUploader"] label *{
+  color: #FFFFFF !important;
+}
+
+/* 2) Texto auxiliar del uploader (ej: 200MB per file • ...) */
+div[data-testid="stFileUploader"] small,
+div[data-testid="stFileUploader"] small *{
+  color: #FFFFFF !important;
+  opacity: 0.95 !important;
+}
+
+/* 3) Cualquier texto dentro del uploader (para asegurar consistencia) */
+div[data-testid="stFileUploader"] p,
+div[data-testid="stFileUploader"] span,
+div[data-testid="stFileUploader"] div{
+  color: #FFFFFF !important;
+}
+
+/* 4) Dropzone / caja del uploader con fondo oscuro (opcional pero recomendado) */
+div[data-testid="stFileUploader"] section{
+  background: rgba(55,65,81,.92) !important;  /* gris oscuro suave */
+  border: 1px dashed rgba(255,255,255,.35) !important;
+  border-radius: 14px !important;
+}
+
+/* 5) Iconos del uploader (para que también se vean) */
+div[data-testid="stFileUploader"] svg{
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+}
+
+/* ==========================================================
+   FIX BOTONES: texto SIEMPRE blanco dentro del botón
+   ========================================================== */
+
+.stButton > button{
+  color: #FFFFFF !important;
+}
+
+.stButton > button *{
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+}
+
+/* Si algún estilo global afecta textos dentro del botón */
+section[data-testid="stMain"] .stButton > button span,
+section[data-testid="stMain"] .stButton > button p,
+section[data-testid="stMain"] .stButton > button div{
+  color: #FFFFFF !important;
+}
+
+/* SOLO el texto del label del uploader ("Subir documentos") */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] label {
+  color: #111827 !important;   /* oscuro */
+  font-weight: 700 !important; /* un poco marcado */
+}
+
+/* Logos en el hero */
+.hero-logos{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+}
+
+.hero-logos img{
+  height: 100px;          /* ajusta si quieres */
+  width: auto;
+  object-fit: contain;
+  display:block;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.15));
+}
+
+.hero-logos .divider{
+  width: 1px;
+  height: 34px;
+  background: rgba(255,255,255,.35);
+  border-radius: 1px;
+}
+
