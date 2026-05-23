@@ -268,7 +268,7 @@ with st.sidebar:
     st.session_state.page = choice
 
     st.divider()
-    st.caption("Demo solo visual (Front). Modo claro.")
+    st.caption("Yamaha Servicios Financieros · Confía en quien mejor te conoce.")
 
 
 # st.markdown(
@@ -644,7 +644,7 @@ def render_formalizacion():
     st.markdown("### Garantías (DEMO)")
     f["garantias_ok"] = st.checkbox("Garantía/prenda sobre el activo (motor/bote/moto acuática) o alternativa (DEMO)", value=f["garantias_ok"])  # 
 
-    st.divider()
+    # st.divider()
 
     listo = f["formalizacion_ok"] and f["seguros_ok"] and f["garantias_ok"]
 
@@ -843,7 +843,7 @@ def render_finalizacion():
     with b3:
         if decision == "Aprobado" and not formalizado:
             if st.button("Ir a Formalización", use_container_width=True):
-                go("✅ Formalización")
+                go("Formalización")
         elif decision == "Congelado":
             if st.button("Ir a Documentación", use_container_width=True):
                 go("Solicitar crédito", step=1)

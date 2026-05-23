@@ -705,3 +705,178 @@ section[data-testid="stMain"] span {
   color: #FFFFFF !important;
 }
 
+/* SOLO el texto auxiliar del uploader: "200MB per file • ..." */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] small {
+  color: #FFFFFF !important;
+}
+
+/* Por si Streamlit lo renderiza dentro de span/p */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] small *,
+section[data-testid="stMain"] div[data-testid="stFileUploader"] p small,
+section[data-testid="stMain"] div[data-testid="stFileUploader"] span small {
+  color: #FFFFFF !important;
+}
+
+/* SOLO helper text del uploader */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] span {
+  color: #FFFFFF !important;
+}
+
+/* Mantener el título del uploader oscuro si ya lo tienes bien */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] label,
+section[data-testid="stMain"] div[data-testid="stFileUploader"] label * {
+  color: #111827 !important;
+}
+
+/* ==========================================================
+   UPLOADER OSCURO - mejorar botón izquierdo
+   ========================================================== */
+
+/* Caja general */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] section {
+  background: #4B5563 !important;
+  border: 1px dashed rgba(255,255,255,.25) !important;
+  border-radius: 14px !important;
+}
+
+/* Texto helper blanco */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] small,
+section[data-testid="stMain"] div[data-testid="stFileUploader"] small * {
+  color: #FFFFFF !important;
+}
+
+/* Botón del uploader */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] button,
+section[data-testid="stMain"] div[data-testid="stFileUploader"] button * {
+  background: #111827 !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  border-radius: 10px !important;
+}
+
+/* Ícono en blanco */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] svg {
+  fill: #FFFFFF !important;
+  color: #FFFFFF !important;
+}
+
+/* ==========================================================
+   UPLOADER - ESTADO CON ARCHIVO SUBIDO
+   ========================================================== */
+
+/* Contenedor general del uploader cuando ya hay archivo */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] section {
+  background: #4B5563 !important;
+  border: 1px dashed rgba(255,255,255,.25) !important;
+  border-radius: 14px !important;
+  padding: 12px !important;
+}
+
+/* Tarjeta interna del archivo cargado */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] [data-testid="stFileUploaderDropzone"] > div,
+section[data-testid="stMain"] div[data-testid="stFileUploader"] section > div {
+  background: transparent !important;
+}
+
+/* Caja clara donde aparece el archivo */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] [data-testid="stFileUploaderDropzone"] div[role="button"],
+section[data-testid="stMain"] div[data-testid="stFileUploader"] section div[role="button"] {
+  background: #F8FAFC !important;
+  border-radius: 12px !important;
+  border: 1px solid #E5E7EB !important;
+  color: #111827 !important;
+  padding: 10px 12px !important;
+}
+
+/* Texto dentro del archivo cargado */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] div[role="button"] * {
+  color: #111827 !important;
+}
+
+/* Icono del archivo */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] svg {
+  fill: #FFFFFF !important;
+  color: #FFFFFF !important;
+}
+
+/* Botón redondo de agregar / upload (+) */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] button,
+section[data-testid="stMain"] div[data-testid="stFileUploader"] button * {
+  background: #111827 !important;
+  color: #FFFFFF !important;
+  border-radius: 10px !important;
+  border: none !important;
+}
+
+/* Botón de cerrar / eliminar archivo */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] [aria-label="Delete file"],
+section[data-testid="stMain"] div[data-testid="stFileUploader"] [aria-label="Remove file"],
+section[data-testid="stMain"] div[data-testid="stFileUploader"] [title="Delete file"],
+section[data-testid="stMain"] div[data-testid="stFileUploader"] [title="Remove file"] {
+  color: #111827 !important;
+  fill: #111827 !important;
+}
+
+/* Label principal "Subir documentos" */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] label,
+section[data-testid="stMain"] div[data-testid="stFileUploader"] label * {
+  color: #111827 !important;
+  font-weight: 700 !important;
+}
+
+/* Helper text pequeño */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] small,
+section[data-testid="stMain"] div[data-testid="stFileUploader"] small * {
+  color: #FFFFFF !important;
+}
+
+/* ==========================================================
+   SOLO TEXTO DEL ARCHIVO SUBIDO (nombre + tamaño)
+   ========================================================== */
+
+/* Caja del archivo cargado */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] {
+  color: #111827 !important;
+}
+
+/* Texto dentro de la caja del archivo */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] * {
+  color: #111827 !important;
+  fill: #111827 !important;
+  opacity: 1 !important;
+}
+
+/* Nombre del archivo */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] [data-testid="stFileUploaderFileName"] {
+  color: #111827 !important;
+  font-weight: 600 !important;
+}
+
+/* Tamaño del archivo */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] [data-testid="stFileUploaderFileSize"] {
+  color: #4B5563 !important;
+  font-weight: 500 !important;
+}
+
+/* ==========================================================
+   FALLBACK para texto del archivo cargado
+   ========================================================== */
+
+/* Contenido textual dentro del item cargado */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] div[role="button"] p,
+section[data-testid="stMain"] div[data-testid="stFileUploader"] div[role="button"] span,
+section[data-testid="stMain"] div[data-testid="stFileUploader"] div[role="button"] small {
+  color: #111827 !important;
+  opacity: 1 !important;
+}
+
+/* Nombre del archivo */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] div[role="button"] p {
+  color: #111827 !important;
+  font-weight: 600 !important;
+}
+
+/* Tamaño del archivo */
+section[data-testid="stMain"] div[data-testid="stFileUploader"] div[role="button"] small {
+  color: #4B5563 !important;
+}
