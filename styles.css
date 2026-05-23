@@ -674,3 +674,34 @@ section[data-testid="stMain"] [data-testid="stMetricValue"] {
 section[data-testid="stMain"] [data-testid="stMetricDelta"] {
   font-size: 12px !important;
 }
+
+/* ==========================================================
+   FIX FINALIZACIÓN - texto oscuro y visible
+   ========================================================== */
+
+/* Todo el contenido de la pantalla final en modo claro */
+section[data-testid="stMain"] .card,
+section[data-testid="stMain"] .card * {
+  color: var(--text) !important;
+}
+
+/* Títulos tipo "Resumen" */
+section[data-testid="stMain"] h2,
+section[data-testid="stMain"] h3 {
+  color: var(--text) !important;
+}
+
+/* Listas y bullets dentro del contenido */
+section[data-testid="stMain"] ul,
+section[data-testid="stMain"] li,
+section[data-testid="stMain"] p,
+section[data-testid="stMain"] span {
+  color: var(--text) !important;
+}
+
+/* Mantener el hero sin afectarlo */
+.hero,
+.hero * {
+  color: #FFFFFF !important;
+}
+

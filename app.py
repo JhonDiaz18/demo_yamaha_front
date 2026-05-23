@@ -30,7 +30,7 @@ MENU = [
     "Estudio crédito",
     "Formalización",
     "Pendientes",
-    "Resultado / Seguimiento",
+    "Finalización",
 ]
 
 # Stepper horizontal (con lanchas). Paso 1 y Paso 2 reales, resto demo.
@@ -39,8 +39,7 @@ STEP_MODELS = [
     {"key": "p2", "title": "Paso 2", "desc": "Documentación", "icon": "boatSvg2"},
     {"key": "p3", "title": "Paso 3", "desc": "Estudio", "icon": "boatSvg"},
     {"key": "p4", "title": "Paso 4", "desc": "Formalización", "icon": "boatSvg2"},
-    {"key": "p5", "title": "Paso 5", "desc": "Resultado", "icon": "boatSvg"},
-    {"key": "p6", "title": "Paso 6", "desc": "Respuesta (demo)", "icon": "boatSvg2"},
+    {"key": "p5", "title": "Paso 5", "desc": "Finalización", "icon": "boatSvg"},
 ]
 
 DOC_TYPES = ["CC", "CE", "NIT", "PAS", "TI"]
@@ -74,6 +73,9 @@ def init_state():
             "tipo_solicitud": "Creación",
             "producto": "Wholesale",
             "modalidad": "Marina",
+            "tipo_activo": "Motor fuera de borda",
+            "uso_activo": "Comercial (pesca, turismo, transporte)",
+            "zona_operacion": "Costa",
 
             # Uso exclusivo (opcional)
             "zona_matricular": "",
@@ -388,8 +390,8 @@ elif st.session_state.page == "Formalización":
     active_idx = 3  # Paso 4 ✅
 elif st.session_state.page == "Pendientes":
     active_idx = 2  # sigue en Estudio (Paso 3) aunque esté congelado
-elif st.session_state.page == "Resultado / Seguimiento":
-    active_idx = 5  # Paso 6 (Resultado)
+elif st.session_state.page == "Finalización":
+    active_idx = 4  # Paso 5 (Finalización)
 elif st.session_state.page == "Solicitar crédito":
     # Paso 1 y 2 dependen de step: 0->Paso1, 1->Paso2
     active_idx = st.session_state.step
@@ -415,37 +417,6 @@ def card_close():
 def kyc():
     return st.session_state.kyc
 
-def render_submit_modal():
-    """Modal que aparece al finalizar Paso 2."""
-    if not st.session_state.show_submit_modal:
-        return
-
-    st.markdown(
-        """
-        <div class="modal-overlay">
-          <div class="modal">
-            <div class="modal-title">✅ Solicitud radicada</div>
-            <div class="modal-text">
-              Tu solicitud pasará a <b>Estudio de crédito</b>. <br/>
-              En la demo podrás ver cómo se evaluaría el caso con ejemplos ficticios.
-            </div>
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # Acciones con botones (debajo del HTML, para que Streamlit capture eventos)
-    a1, a2 = st.columns([3, 1])
-    with a1:
-        if st.button("Ir a Estudio de crédito", key="modal_go_study", use_container_width=True):
-            st.session_state.show_submit_modal = False
-            st.session_state.page = "Estudio crédito"
-            st.rerun()
-    with a2:
-        if st.button("Cerrar", key="modal_close", use_container_width=True):
-            st.session_state.show_submit_modal = False
-            st.rerun()
 
 def go(page: str, step=None):
     """Navegación segura: NO modifica el estado del radio después de creado."""
@@ -453,6 +424,23 @@ def go(page: str, step=None):
     if step is not None:
         st.session_state.pending_step = step
     st.rerun()
+
+@st.dialog("✅ Solicitud radicada")
+def submit_dialog():
+    st.write("Tu solicitud pasará a **Estudio de crédito**.")
+    st.write("En la demo podrás ver cómo se evaluaría el caso con ejemplos ficticios.")
+
+    c1, c2 = st.columns([2, 1])
+
+    with c1:
+        if st.button("Ir a Estudio de crédito", use_container_width=True, key="dialog_go_study"):
+            st.session_state.show_submit_modal = False
+            go("Estudio crédito")
+
+    with c2:
+        if st.button("Cerrar", use_container_width=True, key="dialog_close"):
+            st.session_state.show_submit_modal = False
+            st.rerun()
 
 # ==========================================================
 # 6) RUTEO (en Parte 2 implementamos contenido real de Paso 1 y Paso 2)
@@ -608,7 +596,7 @@ def render_estudio_credito():
 
         elif study["decision"] == "Rechazado":
             if st.button("Ver Resultado →", use_container_width=True):
-                go("Resultado / Seguimiento")
+                go("Finalización")
 
 def render_pendientes_congelado():
     card_open("Pendientes de Estudio (DEMO)", "Tu solicitud quedó congelada por información pendiente. (Vista demo)")
@@ -645,6 +633,7 @@ def render_formalizacion():
     st.info("Esta pantalla simula la formalización posterior a una decisión Aprobada. ")
 
     f = st.session_state.final
+    study = st.session_state.study
 
     st.markdown("### Documentos")
     f["formalizacion_ok"] = st.checkbox("Carta de aprobación / Pagaré / Contrato (DEMO)", value=f["formalizacion_ok"])
@@ -668,14 +657,14 @@ def render_formalizacion():
 
     with c2:
         if st.button("Finalizar →", disabled=not listo, use_container_width=True):
-            # manda a Resultado final
-            st.session_state.page = "Resultado / Seguimiento"
-            st.rerun()
+            if study.get("decision") == "Aprobado":
+                f["finalizado"] = True
+                go("Finalización")
 
     card_close()
 
 def render_resultado():
-    card_open("📩 Resultado / Seguimiento (DEMO)", "Resumen final según la decisión del estudio.")
+    card_open("Finalización", "Resumen final según la decisión del estudio.")
 
     study = st.session_state.study
     decision = study.get("decision")
@@ -709,6 +698,160 @@ def render_resultado():
             st.rerun()
 
     card_close()
+
+def render_finalizacion():
+    card_open("📩 Paso 5 | Finalización", "Resumen final del proceso y estado de la solicitud.")
+
+    study = st.session_state.study
+    data = st.session_state.kyc
+    final = st.session_state.final
+
+    decision = study.get("decision")
+    formalizado = final.get("finalizado", False)
+
+    # =========================
+    # 1) Resumen superior en cards
+    # =========================
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.metric("Radicado", study.get("radicado", "SOL-2026-000123"))
+    with c2:
+        st.metric("Producto", data.get("producto", "Wholesale"))
+    with c3:
+        st.metric("Modalidad", data.get("modalidad", "Marina"))
+    with c4:
+        if decision == "Aprobado" and formalizado:
+            st.metric("Estado final", "Formalizado")
+        elif decision == "Aprobado":
+            st.metric("Estado final", "Aprobado")
+        elif decision == "Congelado":
+            st.metric("Estado final", "Congelado")
+        elif decision == "Rechazado":
+            st.metric("Estado final", "Rechazado")
+        else:
+            st.metric("Estado final", "Sin decisión")
+
+    # =========================
+    # 2) Tarjeta central según decisión
+    # =========================
+    if not decision:
+        st.info("Aún no hay decisión registrada. Ve a Estudio y selecciona Aprobado / Congelado / Rechazado.")
+        card_close()
+        return
+
+    if decision == "Aprobado":
+        if formalizado:
+            st.success("✅ Solicitud aprobada y formalizada")
+        else:
+            st.success("✅ Solicitud aprobada")
+
+        st.markdown("### Resumen")
+        st.markdown("- Estado de estudio: **Aprobado**")
+
+        if formalizado:
+            st.markdown("- Formalización: **Completada**")
+            st.markdown("- Resultado final: **Solicitud finalizada correctamente**")
+        else:
+            st.markdown("- Formalización: **Pendiente**")
+            st.markdown("- Resultado final: **Aprobada pendiente por formalización**")
+
+        # Tarjeta simple
+        if formalizado:
+            st.markdown(
+                """
+                <div class="card" style="border-left: 6px solid #10B981;">
+                <div class="form-h" style="margin-bottom:8px;">✅ Aprobado y formalizado</div>
+                <div class="form-p">
+                    La solicitud fue aprobada correctamente y completó la formalización.
+                </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown(
+                """
+                <div class="card" style="border-left: 6px solid #10B981;">
+                <div class="form-h" style="margin-bottom:8px;">✅ Aprobado</div>
+                <div class="form-p">
+                    La solicitud fue aprobada correctamente, pero aún no completa la formalización.
+                </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+    elif decision == "Congelado":
+        motivo = study.get("motivo_congelado", "Falta documentación")
+
+        st.warning("⏸️ Solicitud congelada")
+
+        st.markdown("### Resumen")
+        st.markdown("- Estado de estudio: **Congelado**")
+        st.markdown(f"- Motivo: **{motivo}**")
+        st.markdown("- Resultado final: **Pendiente por completar información o validaciones**")
+
+        st.markdown(
+            f"""
+            <div class="card" style="border-left: 6px solid #F59E0B;">
+              <div class="form-h" style="margin-bottom:8px;">⏸️ Congelado</div>
+              <div class="form-p">
+                La solicitud requiere gestión adicional antes de continuar.<br/>
+                Motivo principal: <b>{motivo}</b>
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    else:  # Rechazado
+        causal = study.get("causal_rechazo", "Score insuficiente")
+
+        st.error("❌ Solicitud rechazada")
+
+        st.markdown("### Resumen")
+        st.markdown("- Estado de estudio: **Rechazado**")
+        st.markdown(f"- Causal: **{causal}**")
+        st.markdown("- Resultado final: **Solicitud no aprobada**")
+
+        st.markdown(
+            f"""
+            <div class="card" style="border-left: 6px solid #EF4444;">
+              <div class="form-h" style="margin-bottom:8px;">❌ Rechazado</div>
+              <div class="form-p">
+                La solicitud no fue aprobada.<br/>
+                Causal principal: <b>{causal}</b>
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    # =========================
+    # 3) Botones de navegación
+    # =========================
+    b1, b2, b3 = st.columns(3)
+
+    with b1:
+        if st.button("Volver a Estudio", use_container_width=True):
+            go("Estudio crédito")
+
+    with b2:
+        if st.button("Ir a Solicitud", use_container_width=True):
+            go("Solicitar crédito", step=0)
+
+    with b3:
+        if decision == "Aprobado" and not formalizado:
+            if st.button("Ir a Formalización", use_container_width=True):
+                go("✅ Formalización")
+        elif decision == "Congelado":
+            if st.button("Ir a Documentación", use_container_width=True):
+                go("Solicitar crédito", step=1)
+        elif decision == "Rechazado":
+            st.button("Sin acción adicional", disabled=True, use_container_width=True)
+
+    card_close()
+
 # ==========================================================
 # 7) PASO 1: Acordeones KYC + 2 checks + botón Continuar (derecha)
 # ==========================================================
@@ -722,21 +865,53 @@ def paso_1():
     # Encabezado (SIN FECHA)
     # -------------------------
     with st.expander("Encabezado de Solicitud (Tipo, Producto, Modalidad)", expanded=True):
-        c1, c2, c3 = st.columns([1.2, 1.2, 1.2])
+        c1, c2, c3 = st.columns(3)
+       
         with c1:
             kyc()["tipo_solicitud"] = st.selectbox(
                 "Tipo de Solicitud",
                 ["Creación", "Actualización"],
                 index=["Creación", "Actualización"].index(kyc()["tipo_solicitud"])
             )
+
         with c2:
-            # Producto predeterminado Wholesale
             default_prod = PRODUCTOS.index(kyc()["producto"]) if kyc()["producto"] in PRODUCTOS else 0
             kyc()["producto"] = st.selectbox("Producto", PRODUCTOS, index=default_prod)
+
         with c3:
-            # Modalidad predeterminada Marina
             default_mod = MODALIDADES.index(kyc()["modalidad"]) if kyc()["modalidad"] in MODALIDADES else 0
             kyc()["modalidad"] = st.selectbox("Modalidad", MODALIDADES, index=default_mod)
+
+        # Fila 2 - Campos marino
+        c4, c5, c6 = st.columns(3)
+
+        with c4:
+            opciones_tipo_activo = ["Motor fuera de borda", "Bote", "Moto acuática"]
+            current_tipo = kyc().get("tipo_activo", opciones_tipo_activo[0])
+            kyc()["tipo_activo"] = st.selectbox(
+                "Tipo de activo",
+                opciones_tipo_activo,
+                index=opciones_tipo_activo.index(current_tipo) if current_tipo in opciones_tipo_activo else 0
+            )
+
+        with c5:
+            opciones_uso = ["Comercial (pesca, turismo, transporte)", "Recreativo"]
+            current_uso = kyc().get("uso_activo", opciones_uso[0])
+            kyc()["uso_activo"] = st.selectbox(
+                "Uso del activo",
+                opciones_uso,
+                index=opciones_uso.index(current_uso) if current_uso in opciones_uso else 0
+            )
+
+        with c6:
+            opciones_zona = ["Costa", "Río", "Lago"]
+            current_zona = kyc().get("zona_operacion", opciones_zona[0])
+            kyc()["zona_operacion"] = st.selectbox(
+                "Zona de operación",
+                opciones_zona,
+                index=opciones_zona.index(current_zona) if current_zona in opciones_zona else 0
+            )
+
 
     # -------------------------
     # Uso exclusivo Yamaha (opcional)
@@ -1094,8 +1269,14 @@ elif st.session_state.page == "Pendientes":
     render_pendientes_congelado()
 
 
+elif st.session_state.page == "Finalización":
+    render_finalizacion()
+
+
+
 else:
-    render_placeholder("Resultado / Seguimiento", "Parte final demo pendiente.")
+    render_placeholder("Finalización", "Parte final demo pendiente.")
 
 # El modal siempre al final para que quede por encima
-render_submit_modal()
+if st.session_state.show_submit_modal:
+    submit_dialog()
