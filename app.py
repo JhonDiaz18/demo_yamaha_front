@@ -268,7 +268,19 @@ with st.sidebar:
     st.session_state.page = choice
 
     st.divider()
-    st.caption("Yamaha Servicios Financieros · Confía en quien mejor te conoce.")
+    st.markdown(
+    """
+    <div style="line-height: 1.4;">
+        <div style="color:#FFFFFF; font-size:18px; font-weight:900;">
+            Yamaha Servicios Financieros
+        </div>
+        <div style="color:#E5E7EB; font-size:14px; font-weight:600;">
+            Confía en quien mejor te conoce.
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 
 # st.markdown(
@@ -620,10 +632,8 @@ def render_pendientes_congelado():
         st.caption("En un flujo real, aquí se solicitarían documentos/visita/referenciación según la política. ")
     with c2:
         # Ir a Paso 2 (Documentación)
-        if st.button("Ir a Documentación (Paso 2) →", use_container_width=True):
-            st.session_state.page = "Solicitar crédito"
-            st.session_state.step = 1
-            st.rerun()
+        if st.button("Volver a Estudio →", use_container_width=True):
+            go("Estudio crédito")
     
     card_close()
 
@@ -656,7 +666,7 @@ def render_formalizacion():
             st.warning("⚠️ Marca los 3 checks para finalizar la formalización (DEMO).")
 
     with c2:
-        if st.button("Finalizar →", disabled=not listo, use_container_width=True):
+        if st.button("Continuar →", disabled=not listo, use_container_width=True):
             if study.get("decision") == "Aprobado":
                 f["finalizado"] = True
                 go("Finalización")
@@ -830,25 +840,45 @@ def render_finalizacion():
     # =========================
     # 3) Botones de navegación
     # =========================
-    b1, b2, b3 = st.columns(3)
+# =========================
+# 3) Botones de navegación
+# =========================
+    if decision == "Aprobado":
+        # Solo un botón cuando está aprobado
+        c1, c2, c3 = st.columns([2, 1, 2])
 
-    with b1:
-        if st.button("Volver a Estudio", use_container_width=True):
-            go("Estudio crédito")
+        with c2:
+            if st.button("Finalizar", use_container_width=True):
+                # Reiniciar estados principales de la demo
+                st.session_state.study["decision"] = None
+                st.session_state.study["estado"] = "En estudio"
 
-    with b2:
-        if st.button("Ir a Solicitud", use_container_width=True):
-            go("Solicitar crédito", step=0)
+                st.session_state.final["docs_ok"] = False
+                st.session_state.final["seguros_ok"] = False
+                st.session_state.final["garantias_ok"] = False
+                st.session_state.final["finalizado"] = False
 
-    with b3:
-        if decision == "Aprobado" and not formalizado:
-            if st.button("Ir a Formalización", use_container_width=True):
-                go("Formalización")
-        elif decision == "Congelado":
-            if st.button("Ir a Documentación", use_container_width=True):
-                go("Solicitar crédito", step=1)
-        elif decision == "Rechazado":
-            st.button("Sin acción adicional", disabled=True, use_container_width=True)
+                go("Solicitar crédito", step=0)
+
+    else:
+        # Mantener botones cuando NO es aprobado
+        b1, b2, b3 = st.columns(3)
+
+        with b1:
+            if st.button("Volver a Estudio", use_container_width=True):
+                go("Estudio crédito")
+
+        with b2:
+            if st.button("Ir a Solicitud", use_container_width=True):
+                go("Solicitar crédito", step=0)
+
+        with b3:
+            if decision == "Congelado":
+                if st.button("Ir a Documentación", use_container_width=True):
+                    go("Solicitar crédito", step=1)
+            elif decision == "Rechazado":
+                st.button("Sin acción adicional", disabled=True, use_container_width=True)
+
 
     card_close()
 
